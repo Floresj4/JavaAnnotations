@@ -1,9 +1,13 @@
 package com.flores.annotations;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.flores.annotations.components.ComboComponent;
 
 /**
  * Factory for loading components and
@@ -20,12 +24,23 @@ public class ComponentFactory {
 		try {
 			Class<?>clazz = Class.forName(String.format(RESOURCE, getProperResourceName(type)));
 			Constructor<?> constructor = clazz.getConstructor();
+			
+			ComponentImpl component = (ComponentImpl) constructor.newInstance();
+			if(component instanceof ComboComponent) {
+				processAnnotations(clazz, (ComboComponent)component);
+			}
+			
 			return (ComponentImpl) constructor.newInstance();
-
-			//Annotation annotation = clazz.getAnnotations();
 		} catch (Exception e) {
 			logger.error("Something went wrong...");
 			throw e;
+		}
+	}
+
+	private static void processAnnotations(Class<?> clazz, ComboComponent component) {
+		//check for field level annotations
+		for(Field field : clazz.getFields()) {
+			Annotation annotation[] = field.getAnnotations();
 		}
 	}
 	
