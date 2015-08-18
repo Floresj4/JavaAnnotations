@@ -5,6 +5,11 @@ import java.lang.reflect.Constructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Factory for loading components and
+ * processing annotations
+ * @author Jason
+ */
 public class ComponentFactory {
 	
 	public static final String RESOURCE = "com.flores.annotations.components.%sComponent";
