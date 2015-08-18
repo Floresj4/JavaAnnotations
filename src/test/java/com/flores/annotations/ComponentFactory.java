@@ -1,13 +1,10 @@
 package com.flores.annotations;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.flores.annotations.components.ComboComponent;
 
 /**
  * Factory for loading components and
@@ -24,26 +21,34 @@ public class ComponentFactory {
 		try {
 			Class<?>clazz = Class.forName(String.format(RESOURCE, getProperResourceName(type)));
 			Constructor<?> constructor = clazz.getConstructor();
-			
-			ComponentImpl component = (ComponentImpl) constructor.newInstance();
-			if(component instanceof ComboComponent) {
-				processAnnotations(clazz, (ComboComponent)component);
-			}
-			
-			return (ComponentImpl) constructor.newInstance();
+			return processAnnotationChain(clazz, (ComponentImpl) constructor.newInstance());
 		} catch (Exception e) {
 			logger.error("Something went wrong...");
 			throw e;
 		}
 	}
 
-	private static void processAnnotations(Class<?> clazz, ComboComponent component) {
-		//check for field level annotations
+	private static ComponentImpl processAnnotationChain(Class<?> clazz, ComponentImpl component) {
 		for(Field field : clazz.getFields()) {
-			Annotation annotation[] = field.getAnnotations();
+			if(field.getAnnotations().length != 0) {
+
+				Component annotatedComponent;
+				if((annotatedComponent = field.getAnnotation(Component.class)) != null) {
+					
+					try {
+						ComponentType annotatedType = annotatedComponent.type();
+						ComponentImpl annotatedComponentImpl = getComponent(annotatedType);
+						field.set(component, annotatedComponentImpl);
+					} catch(Exception e) {
+						logger.error("An error occurred creating a component. This value will be unset.", e.getMessage());
+					}
+				}
+			}
 		}
+		
+		return component;
 	}
-	
+
 	private static String getProperResourceName(ComponentType type) {
 		char[] tmp = type.name().toLowerCase().toCharArray();
 		tmp[0] = Character.toUpperCase(tmp[0]);
