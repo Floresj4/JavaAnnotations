@@ -34,18 +34,16 @@ public class ComponentFactory {
 
 				Component annotatedComponent;
 				if((annotatedComponent = field.getAnnotation(Component.class)) != null) {
-					
-					try {
-						ComponentType annotatedType = annotatedComponent.type();
-						ComponentImpl annotatedComponentImpl = getComponent(annotatedType);
-						field.set(component, annotatedComponentImpl);
-					} catch(Exception e) {
+
+					//get the component and set
+					try { field.set(component, getComponent(annotatedComponent.type())); }
+					catch(Exception e) {
 						logger.error("An error occurred creating a component. This value will be unset.", e.getMessage());
 					}
 				}
 			}
 		}
-		
+
 		return component;
 	}
 
